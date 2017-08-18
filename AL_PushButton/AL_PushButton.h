@@ -3,7 +3,7 @@
  * 
  * A push button library with anti-vibration, no delay.
  *
- * For more information, visit https://github.com/anders-liu/arduino-libs
+ * For more information, visit https://github.com/anders-liu/arduino-libs/tree/master/AL_PushButton
  */
 
 #pragma once
