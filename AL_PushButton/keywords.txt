@@ -1,0 +1,22 @@
+#######################################
+# Syntax Coloring Map For AL_PushButton
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+AL_PushButton	KEYWORD1
+AL_PushButtonEventHandler	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+handleKeyDown	KEYWORD2
+handleKeyUp	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
