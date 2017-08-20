@@ -6,6 +6,10 @@
 
 #include "AL_ILI9341_D8.h"
 
+#ifdef SUPPORT_DRAW_TEXT
+#include "FontData.cpp"
+#endif
+
 #define CMD_NOP 0x00
 #define CMD_SOFT_RESET 0x01
 #define CMD_READ_STATUS 0x09
@@ -66,6 +70,13 @@
         digitalWrite(rdPin, LOW);  \
         b = *pPin;                 \
         digitalWrite(rdPin, HIGH); \
+    }
+
+#define GET_COLOR_2BYTE(color, b1, b2) \
+    {                                  \
+        uint16_t cv = color565(color); \
+        b1 = cv >> 8;                  \
+        b2 = cv;                       \
     }
 
 void AL_ILI9341_D8::setup()
@@ -180,6 +191,109 @@ void AL_ILI9341_D8::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, Rgb
 {
     RECOVER_PIN;
 
+    setUpdateArea(x, y, w, h);
+
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_MEMORY_WRITE);
+
+    uint8_t b1, b2;
+    GET_COLOR_2BYTE(color, b1, b2);
+    uint32_t count = (uint32_t)w * (uint32_t)h;
+    BEGIN_DATA_OUT;
+    while (count--)
+    {
+        WRITE_BYTE(b1);
+        WRITE_BYTE(b2);
+    }
+}
+
+#ifdef SUPPORT_DRAW_TEXT
+
+#ifdef USE_FONT_5X7
+
+// 5x7 font saves char pattern turned 90 degree clockwise.
+#define WRITE_CHAR_PATTERN(pi, fcb1, fcb2, bcb1, bcb2)             \
+    {                                                              \
+        uint8_t pattern[CHAR_PATTERN_BYTES];                       \
+        for (uint8_t i = 0; i < CHAR_PATTERN_BYTES; i++)           \
+        {                                                          \
+            pattern[i] = pgm_read_byte_near(fontData + pi + i);    \
+        }                                                          \
+        uint8_t mask = 1;                                          \
+        for (uint8_t ppi = 0; ppi < TXT_CHAR_H; ppi++, mask <<= 1) \
+        {                                                          \
+            for (uint8_t off = 0; off < CHAR_PATTERN_BYTES; off++) \
+            {                                                      \
+                if ((pattern[off] & mask) != 0)                    \
+                {                                                  \
+                    WRITE_BYTE(fcb1);                              \
+                    WRITE_BYTE(fcb2);                              \
+                }                                                  \
+                else                                               \
+                {                                                  \
+                    WRITE_BYTE(bcb1);                              \
+                    WRITE_BYTE(bcb2);                              \
+                }                                                  \
+            }                                                      \
+        }                                                          \
+    }
+
+#else
+
+// Other fonts, one byte wide, top to bottom.
+#define WRITE_CHAR_PATTERN(pi, fcb1, fcb2, bcb1, bcb2)                 \
+    {                                                                  \
+        for (uint8_t i = 0; i < CHAR_PATTERN_BYTES; i++)               \
+        {                                                              \
+            uint8_t pb = pgm_read_byte_near(fontData + pi + i);        \
+            uint8_t mask = 0x80;                                       \
+            for (uint8_t ppi = 0; ppi < TXT_CHAR_W; ppi++, mask >>= 1) \
+            {                                                          \
+                if ((pb & mask) != 0)                                  \
+                {                                                      \
+                    WRITE_BYTE(fcb1);                                  \
+                    WRITE_BYTE(fcb2);                                  \
+                }                                                      \
+                else                                                   \
+                {                                                      \
+                    WRITE_BYTE(bcb1);                                  \
+                    WRITE_BYTE(bcb2);                                  \
+                }                                                      \
+            }                                                          \
+        }                                                              \
+    }
+
+#endif // USE_FONT_5X7
+
+void AL_ILI9341_D8::drawText(uint16_t x, uint16_t y, RgbColor foreColor, RgbColor backColor, const char *str)
+{
+    RECOVER_PIN;
+
+    uint8_t fcb1, fcb2, bcb1, bcb2;
+    GET_COLOR_2BYTE(foreColor, fcb1, fcb2);
+    GET_COLOR_2BYTE(backColor, bcb1, bcb2);
+
+    for (uint8_t i = 0; i < 100 && str[i] != 0; i++, x += TXT_CHAR_W)
+    {
+        setUpdateArea(x, y, TXT_CHAR_W, TXT_CHAR_H);
+        uint16_t pi = ((uint8_t)str[i]) * CHAR_PATTERN_BYTES;
+
+        BEGIN_CMD;
+        WRITE_BYTE(CMD_MEMORY_WRITE);
+
+        BEGIN_DATA_OUT;
+        WRITE_CHAR_PATTERN(pi, fcb1, fcb2, bcb1, bcb2);
+    }
+}
+#endif // SUPPORT_DRAW_TEXT
+
+uint16_t AL_ILI9341_D8::color565(RgbColor color)
+{
+    return ((color.r & B11111000) << 8) | ((color.g & B11111100) << 3) | (color.b >> 3);
+}
+
+void AL_ILI9341_D8::setUpdateArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+{
     BEGIN_CMD;
     WRITE_BYTE(CMD_COL_ADDR_SET);
 
@@ -199,23 +313,4 @@ void AL_ILI9341_D8::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, Rgb
     y = y + h - 1;
     WRITE_BYTE((uint8_t)(y >> 8));
     WRITE_BYTE((uint8_t)y);
-
-    BEGIN_CMD;
-    WRITE_BYTE(CMD_MEMORY_WRITE);
-
-    uint16_t cv = color565(color);
-    uint8_t b1 = cv >> 8;
-    uint8_t b2 = cv;
-    uint32_t count = (uint32_t)w * (uint32_t)h;
-    BEGIN_DATA_OUT;
-    while (count--)
-    {
-        WRITE_BYTE(b1);
-        WRITE_BYTE(b2);
-    }
-}
-
-uint16_t AL_ILI9341_D8::color565(RgbColor color)
-{
-    return ((color.r & B11111000) << 8) | ((color.g & B11111100) << 3) | (color.b >> 3);
 }

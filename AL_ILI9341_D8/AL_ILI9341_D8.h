@@ -19,6 +19,41 @@
 // If your module doesn't have touch screen, comment out the following definition.
 #define RECOVER_PIN_BEFORE_TRANSFER
 
+//
+// Fonts
+//
+// If you want to utilize text drawing, please define one and only one font before include this header.
+// If more than one font defined, the priority is as the following list, first come first serve.
+// #define USE_FONT_5X7    /* 5x7 ASCII font */
+// #define USE_FONT_ASC12  /* 8x12 ASCII font */
+// #define USE_FONT_ASC16  /* 8x16 ASCII font */
+
+//#define USE_FONT_5X7
+//#define USE_FONT_ASC12
+#define USE_FONT_ASC16
+
+#if defined(USE_FONT_5X7)
+
+#define SUPPORT_DRAW_TEXT
+#define TXT_CHAR_W 5
+#define TXT_CHAR_H 7
+#define CHAR_PATTERN_BYTES 5
+
+#elif defined(USE_FONT_ASC12)
+
+#define SUPPORT_DRAW_TEXT
+#define TXT_CHAR_W 8
+#define TXT_CHAR_H 12
+#define CHAR_PATTERN_BYTES 12
+
+#elif defined(USE_FONT_ASC16)
+
+#define SUPPORT_DRAW_TEXT
+#define TXT_CHAR_W 8
+#define TXT_CHAR_H 16
+#define CHAR_PATTERN_BYTES 16
+#endif
+
 struct RgbColor
 {
     uint8_t r;
@@ -65,8 +100,16 @@ class AL_ILI9341_D8
      */
     void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, RgbColor color);
 
+#ifdef SUPPORT_DRAW_TEXT
+    /**
+     * Draw text.
+     */
+    void drawText(uint16_t x, uint16_t y, RgbColor foreColor, RgbColor backColor, const char *str);
+#endif
+
   private:
     uint16_t color565(RgbColor color);
+    void setUpdateArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
     volatile uint8_t *pPort;
     volatile uint8_t *pPin;
