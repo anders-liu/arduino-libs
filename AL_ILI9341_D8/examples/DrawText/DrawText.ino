@@ -44,13 +44,7 @@ void drawChar(uint8_t col, uint8_t row, RgbColor color, char c)
 
 void setup()
 {
-    Serial.begin(9600);
-    while (!Serial)
-        ;
-    Serial.println("Serial port ready.");
-
     tft.setup();
-    Serial.println("TFT has been setup.");
 
     // Clear screen.
     tft.fillRect(0, 0, SCREEN_W, SCREEN_H, backColor);

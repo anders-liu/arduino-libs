@@ -91,36 +91,29 @@ void AL_ILI9341_D8::setup()
     digitalWrite(rsPin, LOW);
     digitalWrite(wrPin, HIGH);
     digitalWrite(rdPin, HIGH);
-    delay(1);
     digitalWrite(rstPin, HIGH);
-    delay(200);
 
     RECOVER_PIN;
     BEGIN_CMD;
-    WRITE_BYTE(0);
-    WRITE_BYTE(0);
-    WRITE_BYTE(0);
-    WRITE_BYTE(0);
-    delay(200);
 
     WRITE_BYTE(CMD_SOFT_RESET);
     delay(50);
     WRITE_BYTE(CMD_DISP_OFF);
 
     WRITE_BYTE(CMD_PIXEL_FORMAT_SET);
+
     BEGIN_DATA_OUT;
     WRITE_BYTE(PF_16BIT);
 
     BEGIN_CMD;
     WRITE_BYTE(CMD_MEMORY_ACCESS_CONTROL);
+
     BEGIN_DATA_OUT;
     WRITE_BYTE(0xE8);
 
     BEGIN_CMD;
     WRITE_BYTE(CMD_SLEEP_OUT);
-    delay(150);
     WRITE_BYTE(CMD_DISP_ON);
-    delay(500);
 }
 
 uint32_t AL_ILI9341_D8::readStatus()
