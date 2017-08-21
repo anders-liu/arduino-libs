@@ -18,7 +18,7 @@ This library drives ILI9341 based TFT screen, which is typically 320x240.
 
 This library depends on:
 
-* [AL_GraphScreen](../AL_GraphScreen/README.md)
+* [AL_GraphScreen](https://github.com/anders-liu/arduino-libs/tree/master/AL_GraphScreen)
 
 ## Usage
 

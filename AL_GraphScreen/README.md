@@ -8,4 +8,4 @@ This library provides basic interfaces of graphical screen.
 
 Libraries which implement these interfaces:
 
-* [# AL_ILI9341_D8](../AL_ILI9341_D8/README.md)
+* [AL_ILI9341_D8](https://github.com/anders-liu/arduino-libs/tree/master/AL_ILI9341_D8)
