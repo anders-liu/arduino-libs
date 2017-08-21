@@ -12,6 +12,8 @@ This library drives ILI9341 based TFT screen, which is typically 320x240.
 * *Important*, it works on a customized wiring, you *MUST* connect all 8 data pins to a single port.
 * Currently Works in landscape mode only (320 width x 240 height).
 
+*NOTE*, sometimes you must manually modify AL_ILI9341_D8.h to make your app works. See [docs/HEADER_CUSTOMIZATION.md](docs/HEADER_CUSTOMIZATION.md)
+
 ## Usage
 
 1. **Define the port and pins**
