@@ -10,7 +10,10 @@
 #define TFT_WR A11
 #define TFT_RD A12
 
-AL_ILI9341_D8 tft(&TFT_PORT, &TFT_PIN, &TFT_DDR, TFT_RST, TFT_CS, TFT_RS, TFT_WR, TFT_RD);
+AL_ILI9341_D8 tft(
+    &TFT_PORT, &TFT_PIN, &TFT_DDR,
+    TFT_RST, TFT_CS, TFT_RS, TFT_WR, TFT_RD,
+    AL_SO_LANDSCAPE2);
 
 uint32_t lastMillis = 0;
 
@@ -28,16 +31,16 @@ uint32_t lastMillis = 0;
 #define CUBE_FS3 121
 #define CUBE_FS4 181
 
-RgbColor cubeAreaColor = {255, 255, 255};
-RgbColor lineColor = {0xF8, 0xF8, 0xF8};
-RgbColor fTileColor = {255, 0, 0};     // red
-RgbColor bTileColor = {237, 191, 0};   // orange
-RgbColor lTileColor = {0, 0, 255};     // blue
-RgbColor rTileColor = {0, 255, 0};     // green
-RgbColor uTileColor = {255, 255, 0};   //yellow
-RgbColor dTileColor = {255, 255, 255}; //white
+AL_RgbColor cubeAreaColor = {255, 255, 255};
+AL_RgbColor lineColor = {0xF8, 0xF8, 0xF8};
+AL_RgbColor fTileColor = {255, 0, 0};     // red
+AL_RgbColor bTileColor = {237, 191, 0};   // orange
+AL_RgbColor lTileColor = {0, 0, 255};     // blue
+AL_RgbColor rTileColor = {0, 255, 0};     // green
+AL_RgbColor uTileColor = {255, 255, 0};   //yellow
+AL_RgbColor dTileColor = {255, 255, 255}; //white
 
-void drawFace(uint16_t x0, uint16_t y0, RgbColor color)
+void drawFace(uint16_t x0, uint16_t y0, AL_RgbColor color)
 {
     uint16_t x, y;
 

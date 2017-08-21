@@ -14,6 +14,8 @@
 #include <Arduino.h>
 #include <stdint.h>
 
+#include "AL_GraphScreen.h"
+
 // For some module, touch screen shares pins with TFT screen.
 // So need to recover pin mode before transfer data.
 // If your module doesn't have touch screen, comment out the following definition.
@@ -54,14 +56,15 @@
 #define CHAR_PATTERN_BYTES 16
 #endif
 
-struct RgbColor
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-};
+#define LONG_SIDE 320
+#define SHORT_SIDE 240
 
 class AL_ILI9341_D8
+#ifdef SUPPORT_DRAW_TEXT
+    : public AL_GraphScreen
+#else
+    : public AL_GraphScreenWithText
+#endif
 {
   public:
     /**
@@ -70,8 +73,13 @@ class AL_ILI9341_D8
      * @param pPort Pointer to the PORTx that connected to LCD data lines.
      * @param pDdr Pointer to DDRx register corresonding to the data port.
      */
-    AL_ILI9341_D8(volatile uint8_t *pPort, volatile uint8_t *pPin, volatile uint8_t *pDdr, byte rstPin, byte csPin, byte rsPin, byte wrPin, byte rdPin)
-        : pPort(pPort), pPin(pPin), pDdr(pDdr), rstPin(rstPin), csPin(csPin), rsPin(rsPin), wrPin(wrPin), rdPin(rdPin)
+    AL_ILI9341_D8(
+        volatile uint8_t *pPort, volatile uint8_t *pPin, volatile uint8_t *pDdr,
+        byte rstPin, byte csPin, byte rsPin, byte wrPin, byte rdPin,
+        AL_ScreenOrientation orientation = AL_SO_PORTRAIT1)
+        : AL_GraphScreen(LONG_SIDE, SHORT_SIDE, orientation),
+          pPort(pPort), pPin(pPin), pDdr(pDdr),
+          rstPin(rstPin), csPin(csPin), rsPin(rsPin), wrPin(wrPin), rdPin(rdPin)
     {
     }
 
@@ -95,20 +103,28 @@ class AL_ILI9341_D8
      */
     uint8_t readPowerMode();
 
-    /**
-     * Fill rectangle.
-     */
-    void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, RgbColor color);
+    void displayOff();
+    void displayOn();
+    void sleepIn();
+    void sleepOut();
+    void clear(AL_RgbColor color);
+
+    void changeOrientation(AL_ScreenOrientation o);
+
+    void fillRect(
+        uint16_t x, uint16_t y,
+        uint16_t w, uint16_t h,
+        AL_RgbColor color);
 
 #ifdef SUPPORT_DRAW_TEXT
-    /**
-     * Draw text.
-     */
-    void drawText(uint16_t x, uint16_t y, RgbColor foreColor, RgbColor backColor, const char *str);
+    void drawText(
+        uint16_t x, uint16_t y,
+        AL_RgbColor foreColor, AL_RgbColor backColor,
+        const char *str, uint8_t maxLen = 100);
 #endif
 
   private:
-    uint16_t color565(RgbColor color);
+    uint16_t color565(AL_RgbColor color);
     void setUpdateArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
     volatile uint8_t *pPort;

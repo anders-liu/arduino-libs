@@ -4,6 +4,7 @@
  * For more information, visit https://github.com/anders-liu/arduino-libs/tree/master/AL_ILI9341_D8
  */
 
+#include <avr/pgmspace.h>
 #include "AL_ILI9341_D8.h"
 
 #ifdef SUPPORT_DRAW_TEXT
@@ -28,6 +29,27 @@
 
 #define PF_16BIT 0x55
 #define PF_18BIT 0x66
+
+#define MA_MIRROR_X 0x80
+#define MA_MIRROR_Y 0x40
+#define MA_ROW_COL_EX 0x20
+#define MA_V_ORDER 0x10
+#define MA_RGB 0x08
+#define MA_H_ORDER 0x04
+
+const static uint8_t soMA[] PROGMEM =
+    {
+        // AL_SO_LANDSCAPE1 = 0
+        MA_ROW_COL_EX | MA_RGB,
+
+        // AL_SO_LANDSCAPE2 = 1
+        MA_ROW_COL_EX | MA_RGB | MA_MIRROR_X | MA_MIRROR_Y,
+
+        // AL_SO_PORTRAIT1 = 2
+        MA_MIRROR_X | MA_RGB,
+
+        // AL_SO_PORTRAIT2 = 3
+        MA_MIRROR_Y | MA_RGB};
 
 #ifdef RECOVER_PIN_BEFORE_TRANSFER
 #define RECOVER_PIN               \
@@ -109,7 +131,7 @@ void AL_ILI9341_D8::setup()
     WRITE_BYTE(CMD_MEMORY_ACCESS_CONTROL);
 
     BEGIN_DATA_OUT;
-    WRITE_BYTE(0xE8);
+    WRITE_BYTE(pgm_read_byte_near(soMA + getOrientation()));
 
     BEGIN_CMD;
     WRITE_BYTE(CMD_SLEEP_OUT);
@@ -180,7 +202,56 @@ uint8_t AL_ILI9341_D8::readPowerMode()
     return x;
 }
 
-void AL_ILI9341_D8::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, RgbColor color)
+void AL_ILI9341_D8::displayOff()
+{
+    RECOVER_PIN;
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_DISP_OFF);
+}
+
+void AL_ILI9341_D8::displayOn()
+{
+    RECOVER_PIN;
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_DISP_ON);
+}
+
+void AL_ILI9341_D8::sleepIn()
+{
+    RECOVER_PIN;
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_SLEEP_IN);
+}
+
+void AL_ILI9341_D8::sleepOut()
+{
+    RECOVER_PIN;
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_SLEEP_OUT);
+}
+
+void AL_ILI9341_D8::clear(AL_RgbColor color)
+{
+    displayOff();
+    fillRect(0, 0, getWidth(), getHeight(), color);
+    displayOn();
+}
+
+void AL_ILI9341_D8::changeOrientation(AL_ScreenOrientation o)
+{
+    RECOVER_PIN;
+
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_MEMORY_ACCESS_CONTROL);
+
+    BEGIN_DATA_OUT;
+    WRITE_BYTE(pgm_read_byte_near(soMA + o));
+}
+
+void AL_ILI9341_D8::fillRect(
+    uint16_t x, uint16_t y,
+    uint16_t w, uint16_t h,
+    AL_RgbColor color)
 {
     RECOVER_PIN;
 
@@ -258,7 +329,10 @@ void AL_ILI9341_D8::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, Rgb
 
 #endif // USE_FONT_5X7
 
-void AL_ILI9341_D8::drawText(uint16_t x, uint16_t y, RgbColor foreColor, RgbColor backColor, const char *str)
+void AL_ILI9341_D8::drawText(
+    uint16_t x, uint16_t y,
+    AL_RgbColor foreColor, AL_RgbColor backColor,
+    const char *str, uint8_t maxLen)
 {
     RECOVER_PIN;
 
@@ -266,7 +340,7 @@ void AL_ILI9341_D8::drawText(uint16_t x, uint16_t y, RgbColor foreColor, RgbColo
     GET_COLOR_2BYTE(foreColor, fcb1, fcb2);
     GET_COLOR_2BYTE(backColor, bcb1, bcb2);
 
-    for (uint8_t i = 0; i < 100 && str[i] != 0; i++, x += TXT_CHAR_W)
+    for (uint8_t i = 0; i < maxLen && str[i] != 0; i++, x += TXT_CHAR_W)
     {
         setUpdateArea(x, y, TXT_CHAR_W, TXT_CHAR_H);
         uint16_t pi = ((uint8_t)str[i]) * CHAR_PATTERN_BYTES;
@@ -280,7 +354,7 @@ void AL_ILI9341_D8::drawText(uint16_t x, uint16_t y, RgbColor foreColor, RgbColo
 }
 #endif // SUPPORT_DRAW_TEXT
 
-uint16_t AL_ILI9341_D8::color565(RgbColor color)
+uint16_t AL_ILI9341_D8::color565(AL_RgbColor color)
 {
     return ((color.r & B11111000) << 8) | ((color.g & B11111100) << 3) | (color.b >> 3);
 }

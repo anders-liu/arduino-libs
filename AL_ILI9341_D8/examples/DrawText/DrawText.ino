@@ -10,13 +10,16 @@
 #define TFT_WR A11
 #define TFT_RD A12
 
-AL_ILI9341_D8 tft(&TFT_PORT, &TFT_PIN, &TFT_DDR, TFT_RST, TFT_CS, TFT_RS, TFT_WR, TFT_RD);
+AL_ILI9341_D8 tft(
+    &TFT_PORT, &TFT_PIN, &TFT_DDR,
+    TFT_RST, TFT_CS, TFT_RS, TFT_WR, TFT_RD,
+    AL_SO_LANDSCAPE2);
 
 uint32_t lastMillis = 0;
-RgbColor backColor = {255, 255, 255};
-RgbColor lineColor = {0, 0, 0};
-RgbColor headerColor = {0, 0, 255};
-RgbColor valueColor = {82, 200, 3};
+AL_RgbColor backColor = {255, 255, 255};
+AL_RgbColor lineColor = {0, 0, 0};
+AL_RgbColor headerColor = {0, 0, 255};
+AL_RgbColor valueColor = {82, 200, 3};
 
 #define SCREEN_W 320
 #define SCREEN_H 240
@@ -33,7 +36,7 @@ RgbColor valueColor = {82, 200, 3};
 
 const static char hex[] = "0123456789ABCDEF";
 
-void drawChar(uint8_t col, uint8_t row, RgbColor color, char c)
+void drawChar(uint8_t col, uint8_t row, AL_RgbColor color, char c)
 {
     char str[] = {c, 0};
     tft.drawText(
@@ -45,9 +48,7 @@ void drawChar(uint8_t col, uint8_t row, RgbColor color, char c)
 void setup()
 {
     tft.setup();
-
-    // Clear screen.
-    tft.fillRect(0, 0, SCREEN_W, SCREEN_H, backColor);
+    tft.clear(backColor);
 
     // Draw H lines.
     for (uint8_t r = 0; r < TOTAL_ROWS - 1; r++)

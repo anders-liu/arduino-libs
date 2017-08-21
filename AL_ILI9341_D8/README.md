@@ -14,6 +14,12 @@ This library drives ILI9341 based TFT screen, which is typically 320x240.
 
 *NOTE*, sometimes you must manually modify AL_ILI9341_D8.h to make your app works. See [docs/HEADER_CUSTOMIZATION.md](docs/HEADER_CUSTOMIZATION.md)
 
+## Dependency
+
+This library depends on:
+
+* [AL_GraphScreen](../AL_GraphScreen/README.md)
+
 ## Usage
 
 1. **Define the port and pins**
@@ -63,7 +69,7 @@ void setup()
 Now draw a rectangle.
 
 ```C++
-RgbColor color = {0, 255, 0};
+AL_RgbColor color = {0, 255, 0};
 tft.fillRect(100, 100, 120, 40, color);
 ```
 
