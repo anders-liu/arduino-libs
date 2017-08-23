@@ -1,7 +1,7 @@
 /*
  * Copyright Anders Liu.
  *
- * For more information, visit https://github.com/anders-liu/arduino-libs/tree/master/AL_PushButton
+ * For more information, visit https://github.com/anders-liu/arduino-libs
  */
 
 #include "AL_PushButton.h"

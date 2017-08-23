@@ -24,7 +24,7 @@ class AL_ILI9481 : public AL_GraphScreen
         volatile uint8_t *pPort, volatile uint8_t *pPin, volatile uint8_t *pDdr,
         byte rstPin, byte csPin, byte rsPin, byte wrPin, byte rdPin,
         uint8_t /* AL_SO_x */ orientation = AL_SO_PORTRAIT1)
-        : AL_GraphScreen(480, 320, orientation),
+        : AL_GraphScreen(AL_SCREEN_LONG_SIDE, AL_SCREEN_SHORT_SIDE, orientation),
           pPort(pPort), pPin(pPin), pDdr(pDdr),
           rstPin(rstPin), csPin(csPin), rsPin(rsPin), wrPin(wrPin), rdPin(rdPin)
     {
