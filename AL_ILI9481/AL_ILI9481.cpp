@@ -1,0 +1,242 @@
+//
+// AL_ILI9481.h
+//
+// Implement graphic screen on AL_ILI9481 based TFT screen.
+//
+// Copyright Anders Liu.
+//
+// For more information, visit https://github.com/anders-liu/arduino-libs
+//
+
+#include "AL_ILI9481.h"
+#include "AL_Font.h"
+
+//
+// Commands
+//
+#define CMD_NOP 0x00
+#define CMD_SOFT_RESET 0x01
+#define CMD_READ_POWER_MODE 0x0A
+#define CMD_SLEEP_IN 0x10
+#define CMD_SLEEP_OUT 0x11
+#define CMD_DISP_OFF 0x28
+#define CMD_DISP_ON 0x29
+#define CMD_COL_ADDR_SET 0x2A
+#define CMD_PAGE_ADDR_SET 0x2B
+#define CMD_MEMORY_WRITE 0x2C
+#define CMD_MEMORY_ACCESS_CONTROL 0x36
+#define CMD_PIXEL_FORMAT_SET 0x3A
+
+#define PF_16BIT 0x55
+#define PF_18BIT 0x66
+
+#define MA_ROW_ORDER 0x80
+#define MA_COL_ORDER 0x40
+#define MA_ROW_COL_EX 0x20
+#define MA_V_ORDER 0x10
+#define MA_RGB 0x08
+// reserved 0x04
+#define MA_H_FLIP 0x02
+#define MA_V_FLIP 0x01
+
+#define MA_SO_PORTRAIT1 0
+#define MA_SO_PORTRAIT2 (MA_ROW_ORDER | MA_COL_ORDER)
+#define MA_SO_LANDSCAPE1 (MA_ROW_COL_EX | MA_ROW_ORDER)
+#define MA_SO_LANDSCAPE2 (MA_ROW_COL_EX | MA_COL_ORDER)
+
+#define BEGIN_BUS                 \
+    {                             \
+        pinMode(rsPin, OUTPUT);   \
+        pinMode(csPin, OUTPUT);   \
+        digitalWrite(csPin, LOW); \
+    }
+
+#define END_BUS                    \
+    {                              \
+        digitalWrite(csPin, HIGH); \
+    }
+
+#define BEGIN_CMD                 \
+    {                             \
+        *pDdr = 0xFF;             \
+        digitalWrite(rsPin, LOW); \
+    }
+
+#define BEGIN_DATA_OUT             \
+    {                              \
+        *pDdr = 0xFF;              \
+        digitalWrite(rsPin, HIGH); \
+    }
+
+#define BEGIN_DATA_IN              \
+    {                              \
+        *pDdr = 0x00;              \
+        digitalWrite(rsPin, HIGH); \
+    }
+
+#define WRITE_BYTE(b)              \
+    {                              \
+        *pPort = b;                \
+        digitalWrite(wrPin, LOW);  \
+        digitalWrite(wrPin, HIGH); \
+    }
+
+#define READ_BYTE(b)               \
+    {                              \
+        digitalWrite(rdPin, LOW);  \
+        b = *pPin;                 \
+        digitalWrite(rdPin, HIGH); \
+    }
+
+#define GET_COLOR_2BYTE(color, b1, b2)    \
+    {                                     \
+        uint16_t cv = color.toColor565(); \
+        b1 = cv >> 8;                     \
+        b2 = cv;                          \
+    }
+
+void AL_ILI9481::setup()
+{
+    pinMode(rstPin, OUTPUT);
+    pinMode(csPin, OUTPUT);
+    pinMode(rsPin, OUTPUT);
+    pinMode(wrPin, OUTPUT);
+    pinMode(rdPin, OUTPUT);
+    digitalWrite(rstPin, LOW);
+    digitalWrite(csPin, LOW);
+    digitalWrite(rsPin, LOW);
+    digitalWrite(wrPin, HIGH);
+    digitalWrite(rdPin, HIGH);
+    digitalWrite(rstPin, HIGH);
+
+    BEGIN_BUS;
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_SOFT_RESET);
+    delay(50);
+    WRITE_BYTE(CMD_DISP_OFF);
+    WRITE_BYTE(CMD_PIXEL_FORMAT_SET);
+    BEGIN_DATA_OUT;
+    WRITE_BYTE(PF_16BIT);
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_MEMORY_ACCESS_CONTROL);
+    BEGIN_DATA_OUT;
+    WRITE_BYTE(MA_SO_PORTRAIT1);
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_SLEEP_OUT);
+    delay(15);
+    WRITE_BYTE(CMD_DISP_ON);
+    END_BUS;
+}
+
+void AL_ILI9481::changeOrientation()
+{
+    BEGIN_BUS;
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_MEMORY_ACCESS_CONTROL);
+    BEGIN_DATA_OUT;
+    switch (getOrientation())
+    {
+    case AL_SO_PORTRAIT1:
+        WRITE_BYTE(MA_SO_PORTRAIT1);
+        break;
+    case AL_SO_PORTRAIT2:
+        WRITE_BYTE(MA_SO_PORTRAIT2);
+        break;
+    case AL_SO_LANDSCAPE1:
+        WRITE_BYTE(MA_SO_LANDSCAPE1);
+        break;
+    case AL_SO_LANDSCAPE2:
+        WRITE_BYTE(MA_SO_LANDSCAPE2);
+        break;
+    }
+    END_BUS;
+}
+
+void AL_ILI9481::fillRect(
+    uint16_t x, uint16_t y,
+    uint16_t w, uint16_t h,
+    AL_RgbColor color)
+{
+    BEGIN_BUS;
+    setUpdateArea(x, y, w, h);
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_MEMORY_WRITE);
+
+    uint8_t b1, b2;
+    GET_COLOR_2BYTE(color, b1, b2);
+    uint32_t count = (uint32_t)w * (uint32_t)h;
+    BEGIN_DATA_OUT;
+    while (count--)
+    {
+        WRITE_BYTE(b1);
+        WRITE_BYTE(b2);
+    }
+    END_BUS;
+}
+
+void AL_ILI9481::drawText(
+    uint16_t x, uint16_t y,
+    AL_RgbColor foreColor, AL_RgbColor backColor,
+    const char *str, uint8_t maxLen)
+{
+    BEGIN_BUS;
+
+    uint8_t fcb1, fcb2, bcb1, bcb2;
+    GET_COLOR_2BYTE(foreColor, fcb1, fcb2);
+    GET_COLOR_2BYTE(backColor, bcb1, bcb2);
+
+    for (uint8_t i = 0; i < maxLen && str[i] != 0; i++, x += AL_FONT_CHAR_W)
+    {
+        setUpdateArea(x, y, AL_FONT_CHAR_W, AL_FONT_CHAR_H);
+        uint16_t pi = ((uint8_t)str[i]) * AL_FONT_BYTES_PER_CHAR;
+
+        BEGIN_CMD;
+        WRITE_BYTE(CMD_MEMORY_WRITE);
+
+        BEGIN_DATA_OUT;
+        for (uint8_t i = 0; i < AL_FONT_BYTES_PER_CHAR; i++)
+        {
+            uint8_t pb = pgm_read_byte_near(AL_FontData + pi + i);
+            uint8_t mask = 0x80;
+            for (uint8_t ppi = 0; ppi < AL_FONT_CHAR_W; ppi++, mask >>= 1)
+            {
+                if ((pb & mask) != 0)
+                {
+                    WRITE_BYTE(fcb1);
+                    WRITE_BYTE(fcb2);
+                }
+                else
+                {
+                    WRITE_BYTE(bcb1);
+                    WRITE_BYTE(bcb2);
+                }
+            }
+        }
+    }
+    END_BUS;
+}
+
+void AL_ILI9481::setUpdateArea(
+    uint16_t x, uint16_t y,
+    uint16_t w, uint16_t h)
+{
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_COL_ADDR_SET);
+
+    BEGIN_DATA_OUT;
+    WRITE_BYTE((uint8_t)(x >> 8));
+    WRITE_BYTE((uint8_t)x);
+    x = x + w - 1;
+    WRITE_BYTE((uint8_t)(x >> 8));
+    WRITE_BYTE((uint8_t)x);
+
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_PAGE_ADDR_SET);
+
+    BEGIN_DATA_OUT;
+    WRITE_BYTE((uint8_t)(y >> 8));
+    WRITE_BYTE((uint8_t)y);
+    y = y + h - 1;
+    WRITE_BYTE((uint8_t)(y >> 8));
+    WRITE_BYTE((uint8_t)y);
+}
