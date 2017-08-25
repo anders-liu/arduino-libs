@@ -15,10 +15,10 @@
 #include "AL_Color.h"
 
 // Screen Orientations
-#define AL_SO_PORTRAIT1 0
-#define AL_SO_PORTRAIT2 1
-#define AL_SO_LANDSCAPE1 2
-#define AL_SO_LANDSCAPE2 3
+#define AL_SO_PORTRAIT1 ((uint8_t)0)
+#define AL_SO_PORTRAIT2 ((uint8_t)1)
+#define AL_SO_LANDSCAPE1 ((uint8_t)2)
+#define AL_SO_LANDSCAPE2 ((uint8_t)3)
 
 class AL_GraphScreen
 {

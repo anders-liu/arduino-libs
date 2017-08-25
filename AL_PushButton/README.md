@@ -34,8 +34,10 @@ void onKeyUp()
 }
 ```
 
-* **Setup**
+* **setup**
+
 In Arduino sketch's ```setup()``` function, setup your button.
+
 ```C++
 void setup()
 {
@@ -51,7 +53,9 @@ void setup()
 ```
 
 * **loop**
+
 In Arudino sketch's ```loop()``` function, call button's ```loop()``` function, make it alive!
+
 ```C++
 void loop()
 {
