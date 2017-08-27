@@ -1,5 +1,5 @@
 //
-// AL_ILI9341.h
+// AL_ILI9341.cpp
 //
 // Implement graphic screen on AL_ILI9341 based TFT screen.
 //

@@ -1,5 +1,5 @@
 //
-// AL_TouchScreen.h
+// AL_TouchScreen.cpp
 //
 // Implement resistive touch screen on graphic screen module.
 //
