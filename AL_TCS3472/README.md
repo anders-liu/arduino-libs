@@ -40,7 +40,7 @@ void setup()
 }
 ```
 
-5. **Read color value anytime you want**
+4. **Read color value anytime you want**
 
 Once you need a color value, just ```read``` it!
 
