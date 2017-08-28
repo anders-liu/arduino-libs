@@ -27,9 +27,12 @@ AL_TCS3472 cs(CS_ADDR, CS_LED_PIN);
 
 In Arduino sketch's ```setup()``` function, call ```cs.setup()``` and ```cs.powerOn()``` function.
 
+Since TCS3472 communicates with MCU through I<sup>2</sup>C interface, don't forget ```Wire.begin()```.
+
 ```C++
 void setup()
 {
+    Wire.begin();
     // Setup others...
 
     // Setup color sensor.
