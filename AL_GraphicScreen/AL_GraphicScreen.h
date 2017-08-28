@@ -58,6 +58,16 @@ class AL_GraphScreen
         AL_RgbColor foreColor, AL_RgbColor backColor,
         const char *str, uint8_t maxLen) = 0;
 
+    // Draw text with scale.
+    virtual void drawText(
+        uint16_t x, uint16_t y,
+        AL_RgbColor foreColor, AL_RgbColor backColor,
+        uint8_t /* scale */, const char *str, uint8_t maxLen)
+    {
+        // By default, just no scale.
+        drawText(x, y, foreColor, backColor, str, maxLen);
+    }
+
   protected:
     // Must overwrite in subclass to actually change orientation.
     virtual void changeOrientation() = 0;

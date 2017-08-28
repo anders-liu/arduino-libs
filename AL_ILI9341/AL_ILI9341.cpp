@@ -214,6 +214,61 @@ void AL_ILI9341::drawText(
     END_BUS;
 }
 
+void AL_ILI9341::drawText(
+    uint16_t x, uint16_t y,
+    AL_RgbColor foreColor, AL_RgbColor backColor,
+    uint8_t scale, const char *str, uint8_t maxLen)
+{
+    BEGIN_BUS;
+
+    uint8_t fcb1, fcb2, bcb1, bcb2;
+    GET_COLOR_2BYTE(foreColor, fcb1, fcb2);
+    GET_COLOR_2BYTE(backColor, bcb1, bcb2);
+
+    uint8_t pixelWidth = AL_FONT_CHAR_W * scale;
+    uint8_t pixelHeight = AL_FONT_CHAR_H * scale;
+    for (uint8_t i = 0; i < maxLen && str[i] != 0; i++, x += pixelWidth)
+    {
+        setUpdateArea(x, y, pixelWidth, pixelHeight);
+        uint16_t pi = ((uint8_t)str[i]) * AL_FONT_BYTES_PER_CHAR;
+
+        BEGIN_CMD;
+        WRITE_BYTE(CMD_MEMORY_WRITE);
+
+        BEGIN_DATA_OUT;
+        for (uint8_t i = 0; i < AL_FONT_BYTES_PER_CHAR; i++)
+        {
+            // For each line, draw 'scale' times.
+            for (uint8_t sl = 0; sl < scale; sl++)
+            {
+                uint8_t pb = pgm_read_byte_near(AL_FontData + pi + i);
+                uint8_t mask = 0x80;
+                for (uint8_t ppi = 0; ppi < AL_FONT_CHAR_W; ppi++, mask >>= 1)
+                {
+                    // For each pixel, draw 'scale' times.
+                    if ((pb & mask) != 0)
+                    {
+                        for (uint8_t sp = 0; sp < scale; sp++)
+                        {
+                            WRITE_BYTE(fcb1);
+                            WRITE_BYTE(fcb2);
+                        }
+                    }
+                    else
+                    {
+                        for (uint8_t sp = 0; sp < scale; sp++)
+                        {
+                            WRITE_BYTE(bcb1);
+                            WRITE_BYTE(bcb2);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    END_BUS;
+}
+
 void AL_ILI9341::setUpdateArea(
     uint16_t x, uint16_t y,
     uint16_t w, uint16_t h)
