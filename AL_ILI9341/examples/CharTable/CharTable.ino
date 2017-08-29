@@ -56,7 +56,9 @@ void setup()
 {
     tft.setup();
     tft.setOrientation(AL_SO_LANDSCAPE2);
+    tft.displayOff();
     tft.fillRect(0, 0, SCREEN_W, SCREEN_H, backColor);
+    tft.displayOn();
 
     uint16_t col, row, i;
 

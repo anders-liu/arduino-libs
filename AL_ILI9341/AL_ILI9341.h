@@ -33,6 +33,9 @@ public:
 public:
   virtual void setup();
 
+  virtual void displayOff();
+  virtual void displayOn();
+
   virtual void fillRect(
       uint16_t x, uint16_t y,
       uint16_t w, uint16_t h,

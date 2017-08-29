@@ -126,6 +126,22 @@ void AL_ILI9341::setup()
     END_BUS;
 }
 
+void AL_ILI9341::displayOff()
+{
+    BEGIN_BUS;
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_DISP_OFF);
+    END_BUS;
+}
+
+void AL_ILI9341::displayOn()
+{
+    BEGIN_BUS;
+    BEGIN_CMD;
+    WRITE_BYTE(CMD_DISP_ON);
+    END_BUS;
+}
+
 void AL_ILI9341::changeOrientation()
 {
     BEGIN_BUS;
