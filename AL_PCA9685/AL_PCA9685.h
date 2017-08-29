@@ -15,6 +15,7 @@
 
 // Pre-scale = round(clock / (4096 x update-rate)) - 1
 // For 50Hz: round(25MHz / (4096 x 50Hz)) - 1 = 121 = 0x79
+// But actually, 0x81 is more close to 50Hz (20ms).
 #define AL_PCA9685_PRE_SCALE_50HZ ((uint8_t)0x81)
 
 class AL_PCA9685
