@@ -110,7 +110,7 @@ void AL_ILI9341::setup()
     BEGIN_BUS;
     BEGIN_CMD;
     WRITE_BYTE(CMD_SOFT_RESET);
-    delay(50);
+    delay(150);
     WRITE_BYTE(CMD_DISP_OFF);
     WRITE_BYTE(CMD_PIXEL_FORMAT_SET);
     BEGIN_DATA_OUT;
@@ -121,7 +121,7 @@ void AL_ILI9341::setup()
     WRITE_BYTE(MA_SO_PORTRAIT1);
     BEGIN_CMD;
     WRITE_BYTE(CMD_SLEEP_OUT);
-    delay(15);
+    delay(150);
     WRITE_BYTE(CMD_DISP_ON);
     END_BUS;
 }
