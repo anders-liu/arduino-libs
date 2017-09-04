@@ -5,16 +5,16 @@
 #define TFT_PORT PORTF
 #define TFT_PIN PINF
 #define TFT_DDR DDRF
-#define TFT_RST A12
-#define TFT_CS A11
+#define TFT_RST A9
+#define TFT_CS A8
 #define TFT_RS A10
-#define TFT_WR A9
-#define TFT_RD A8
+#define TFT_WR A11
+#define TFT_RD A12
 
 // For ILI9341
 #define TC_XP /* TFT_D0 */ A0
 #define TC_XM /* TFT_RS */ A10
-#define TC_YP /* TFT_CS */ A9
+#define TC_YP /* TFT_CS */ A8
 #define TC_YM /* TFT_D1 */ A1
 
 AL_ILI9341 tft(
