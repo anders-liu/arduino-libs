@@ -64,9 +64,6 @@ public:
   void handleTouchEnd(AL_TouchScreenEventHandler handler) { touchEndHandler = handler; }
 
 private:
-  bool checkTouch();
-  uint16_t sampleX();
-  uint16_t sampleY();
   void read();
 
 private:

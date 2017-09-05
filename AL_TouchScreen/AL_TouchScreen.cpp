@@ -20,8 +20,6 @@
 #define DEBOUNCE_INTERVAL 5
 #define MOVE_INTERVAL 20
 
-#define MAX_SAMPLES 4
-
 #define S_IDLE ((uint8_t)0)
 #define S_START ((uint8_t)1)
 #define S_POSSIBLE_TOUCH_START ((uint8_t)2)
@@ -46,6 +44,34 @@
         digitalWrite(pin, LOW); \
     }
 
+#define CHECK_TOUCH(res)                   \
+    {                                      \
+        HI_Z(xmPin);                       \
+        HI_Z(ypPin);                       \
+        pinMode(xpPin, INPUT_PULLUP);      \
+        pinMode(ymPin, OUTPUT);            \
+        digitalWrite(ymPin, LOW);          \
+        res = (LOW == digitalRead(xpPin)); \
+    }
+
+#define SAMPLE_X(res)            \
+    {                            \
+        HI_Z(ypPin);             \
+        HI_Z(ymPin);             \
+        POS(xpPin);              \
+        NEG(xmPin);              \
+        res = analogRead(ypPin); \
+    }
+
+#define SAMPLE_Y(res)            \
+    {                            \
+        HI_Z(xpPin);             \
+        HI_Z(xmPin);             \
+        POS(ypPin);              \
+        NEG(ymPin);              \
+        res = analogRead(xpPin); \
+    }
+
 void AL_TouchScreen::loop()
 {
     uint32_t ms = millis();
@@ -61,16 +87,22 @@ void AL_TouchScreen::loop()
         break;
 
     case S_START:
-        if (checkTouch())
+    {
+        bool touched;
+        CHECK_TOUCH(touched)
+        if (touched)
         {
             state = S_POSSIBLE_TOUCH_START;
         }
-        break;
+    }
+    break;
 
     case S_POSSIBLE_TOUCH_START:
         if (ms - lastMillis > DEBOUNCE_INTERVAL)
         {
-            if (checkTouch())
+            bool touched;
+            CHECK_TOUCH(touched)
+            if (touched)
             {
                 state = S_TOUCHED;
                 read();
@@ -88,7 +120,10 @@ void AL_TouchScreen::loop()
         break;
 
     case S_TOUCHED:
-        if (!checkTouch())
+    {
+        bool touched;
+        CHECK_TOUCH(touched)
+        if (!touched)
         {
             state = S_POSSIBLE_TOUCH_END;
         }
@@ -104,12 +139,15 @@ void AL_TouchScreen::loop()
                 lastMillis = ms;
             }
         }
-        break;
+    }
+    break;
 
     case S_POSSIBLE_TOUCH_END:
         if (ms - lastMillis > DEBOUNCE_INTERVAL)
         {
-            if (!checkTouch())
+            bool touched;
+            CHECK_TOUCH(touched)
+            if (!touched)
             {
                 state = S_IDLE;
                 if (touchEndHandler)
@@ -129,17 +167,9 @@ void AL_TouchScreen::loop()
 
 void AL_TouchScreen::read()
 {
-    uint32_t x = sampleX();
-    uint32_t y = sampleY();
-
-    for (uint8_t i = 1; i < MAX_SAMPLES; i++)
-    {
-        x += sampleX();
-        y += sampleY();
-    }
-
-    x /= MAX_SAMPLES;
-    y /= MAX_SAMPLES;
+    uint32_t x = 0, y = 0;
+    SAMPLE_X(x);
+    SAMPLE_Y(y);
 
     // Map to screen coordinates.
     x = (x - MIN_X_RAW) * shortSide / (MAX_X_RAW - MIN_X_RAW);
@@ -164,32 +194,4 @@ void AL_TouchScreen::read()
         curY = shortSide - x;
         break;
     }
-}
-
-bool AL_TouchScreen::checkTouch()
-{
-    HI_Z(xmPin);
-    HI_Z(ypPin);
-    pinMode(xpPin, INPUT_PULLUP);
-    pinMode(ymPin, OUTPUT);
-    digitalWrite(ymPin, LOW);
-    return LOW == digitalRead(xpPin);
-}
-
-uint16_t AL_TouchScreen::sampleX()
-{
-    HI_Z(ypPin);
-    HI_Z(ymPin);
-    POS(xpPin);
-    NEG(xmPin);
-    return analogRead(ypPin);
-}
-
-uint16_t AL_TouchScreen::sampleY()
-{
-    HI_Z(xpPin);
-    HI_Z(xmPin);
-    POS(ypPin);
-    NEG(ymPin);
-    return analogRead(xpPin);
 }
