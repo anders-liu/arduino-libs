@@ -72,6 +72,7 @@ private:
   uint8_t /* AL_SO_x */ orientation;
   uint8_t state;
   uint16_t curX, curY;
+  uint16_t sampleX, sampleY, tempSampleX, tempSampleY;
   uint32_t lastMillis;
 
   AL_TouchScreenPosEventHandler touchStartHandler;
