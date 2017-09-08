@@ -134,7 +134,7 @@ void AL_TCS3472::powerOff()
         }                                                  \
     }
 
-AL_RgbColor AL_TCS3472::read()
+AL_RawColor AL_TCS3472::readRaw()
 {
     // Read raw data.
     Wire.beginTransmission(addr);
@@ -146,11 +146,31 @@ AL_RgbColor AL_TCS3472::read()
     Wire.requestFrom((uint8_t)addr, (uint8_t)8);
     for (uint8_t i = 0; i < 8; i++)
     {
-        while (!Wire.available())
-            ;
         buffer[i] = Wire.read();
     }
+
+    AL_RawColor data;
+    data.c = (buffer[1] << 8) | buffer[0];
+    data.r = (buffer[3] << 8) | buffer[2];
+    data.g = (buffer[5] << 8) | buffer[4];
+    data.b = (buffer[7] << 8) | buffer[6];
+    return data;
+}
+
+AL_RgbColor AL_TCS3472::readRgb()
+{
+    // Read raw data.
+    Wire.beginTransmission(addr);
+    Wire.write(REG_CDATAL);
     Wire.endTransmission();
+    delayMicroseconds(100);
+
+    uint8_t buffer[8];
+    Wire.requestFrom((uint8_t)addr, (uint8_t)8);
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        buffer[i] = Wire.read();
+    }
 
     // Calculate color.
     uint16_t clear = (buffer[1] << 8) | buffer[0];
