@@ -6,7 +6,7 @@ AndersLiu's Arduino libraries.
 
 A push button library with anti-vibration, no delay.
 
-## [AL_PushButton](https://github.com/anders-liu/arduino-libs/tree/master/AL_LeonardoRxTxLed)
+## [AL_LeonardoRxTxLed](https://github.com/anders-liu/arduino-libs/tree/master/AL_LeonardoRxTxLed)
 
 Provides functions for manipulating TX/RX LED on Arduino Leonardo (ATmega32u4).
 
