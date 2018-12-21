@@ -27,6 +27,7 @@ class AL_PushButton
     AL_PushButton(byte pin)
         : pin(pin),
           state(0xF0),
+          isPushedValue(false),
           lastMillis(0),
           keyDownHandler(nullptr),
           keyUpHandler(nullptr)
@@ -53,10 +54,16 @@ class AL_PushButton
      */
     void handleKeyUp(AL_PushButtonEventHandler handler) { keyUpHandler = handler; }
 
+    bool isPushed() { return isPushedValue; }
+
   private:
     byte pin;
     byte state;
+    bool isPushedValue;
     unsigned long lastMillis;
     AL_PushButtonEventHandler keyDownHandler;
     AL_PushButtonEventHandler keyUpHandler;
+
+    void handleKeyDown();
+    void handleKeyUp();
 };

@@ -31,59 +31,47 @@ void AL_PushButton::loop()
         {
             bitWrite(state, 4, digitalRead(pin));
             byte keyMap = state & 0xF0;
-            if (keyDownHandler && keyMap == B01100000)
-            {
-                keyDownHandler();
-            }
-            if (keyUpHandler && keyMap == B10010000)
-            {
-                keyUpHandler();
-            }
+            if (keyMap == B01100000) handleKeyDown();
+            if (keyMap == B10010000) handleKeyUp();
             state = (state & 0xF0) | 1;
         }
         else if (index == 1)
         {
             bitWrite(state, 5, digitalRead(pin));
             byte keyMap = state & 0xF0;
-            if (keyDownHandler && keyMap == B11000000)
-            {
-                keyDownHandler();
-            }
-            if (keyUpHandler && keyMap == B00110000)
-            {
-                keyUpHandler();
-            }
+            if (keyMap == B11000000) handleKeyDown();
+            if (keyMap == B00110000) handleKeyUp();
             state = (state & 0xF0) | 2;
         }
         else if (index == 2)
         {
             bitWrite(state, 6, digitalRead(pin));
             byte keyMap = state & 0xF0;
-            if (keyDownHandler && keyMap == B10010000)
-            {
-                keyDownHandler();
-            }
-            if (keyUpHandler && keyMap == B01100000)
-            {
-                keyUpHandler();
-            }
+            if (keyMap == B10010000) handleKeyDown();
+            if (keyMap == B01100000) handleKeyUp();
             state = (state & 0xF0) | 3;
         }
         else if (index == 3)
         {
             bitWrite(state, 7, digitalRead(pin));
             byte keyMap = state & 0xF0;
-            if (keyDownHandler && keyMap == B00110000)
-            {
-                keyDownHandler();
-            }
-            if (keyUpHandler && keyMap == B11000000)
-            {
-                keyUpHandler();
-            }
+            if (keyMap == B00110000) handleKeyDown();
+            if (keyMap == B11000000) handleKeyUp();
             state = (state & 0xF0);
         }
 
         lastMillis = ms;
     }
+}
+
+void AL_PushButton::handleKeyDown()
+{
+    isPushedValue = true;
+    if (keyDownHandler) keyDownHandler();
+}
+
+void AL_PushButton::handleKeyUp()
+{
+    isPushedValue = false;
+    if (keyUpHandler) keyUpHandler();
 }
